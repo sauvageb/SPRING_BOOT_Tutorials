@@ -1,112 +1,61 @@
 package com.training.tutorials.controller;
 
 import com.training.tutorials.controller.model.TutorialDto;
-import com.training.tutorials.repository.TutorialRepository;
 import com.training.tutorials.repository.entity.Tutorial;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import com.training.tutorials.service.TutorialService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
-@RestController
-@CrossOrigin("http://localhost:4200")
-@RequestMapping("/api")
+
+@Controller
 public class TutorialController {
 
-    private TutorialRepository tutorialRepository;
+    @Autowired
+    TutorialService tutorialService;
 
-    public TutorialController(TutorialRepository tutorialRepository) {
-        this.tutorialRepository = tutorialRepository;
-    }
-
-    //ROUTE :    /api/tutorials?title=Titre #3
     @GetMapping("/tutorials")
-    public ResponseEntity<List<Tutorial>> getAllTutorials(@RequestParam(value = "title", required = false) String searchedTitle) {
-        List<Tutorial> tutos = new ArrayList<>();
-
-        if (searchedTitle == null) {
-            tutorialRepository.findAll().forEach(t -> tutos.add(t));
-        } else {
-            tutorialRepository.findByTitleContaining(searchedTitle).forEach(t -> tutos.add(t));
-        }
-
-        if (tutos.isEmpty()) {
-            // HTTP 204 : sans contenu
-            return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
-        } else {
-            // HTTP 200 avec les tutos
-            return ResponseEntity.status(HttpStatus.OK).body(tutos);
-        }
-    }
-
-    // ROUTE : /api/tutorials/3
-    @GetMapping("/tutorials/{id}")
-    public ResponseEntity<Tutorial> getTutorialById(@PathVariable("id") Long tutorialId) {
-        Optional<Tutorial> tutorial = tutorialRepository.findById(tutorialId);
-        if (tutorial.isPresent()) {
-            return ResponseEntity.status(HttpStatus.OK).body(tutorial.get());
-        } else {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-        }
-    }
-
-    @GetMapping("/tutorials/published")
-    public ResponseEntity<List<Tutorial>> findByPublished() {
-
-        List<Tutorial> tutorials = tutorialRepository.findByPublished(true);
-
-        if (tutorials.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
-        } else {
-            return ResponseEntity.status(HttpStatus.OK).body(tutorials);
-        }
-    }
-
-
-    @PostMapping("/tutorials")
-    public ResponseEntity<Tutorial> createTutorial(@RequestBody TutorialDto dto) {
+    public String displayAllTutorials(Model model) {
         try {
-            Tutorial newTutorial = new Tutorial(dto.getTitle(), dto.getDescription(), dto.isPublished());
-            tutorialRepository.save(newTutorial);
-            return ResponseEntity.status(HttpStatus.CREATED).body(newTutorial);
+            List<Tutorial> tutorialList = tutorialService.fetchAll();
+            model.addAttribute("tutorials", tutorialList);
         } catch (Exception e) {
-            return ResponseEntity.internalServerError().build();
+            e.printStackTrace();
         }
+        return "tutorials";
     }
 
-    @PutMapping("/tutorials/{id}")
-    public ResponseEntity<Tutorial> updateTutorial(@PathVariable("id") Long idTuto, @RequestBody TutorialDto dto) {
-
-        Optional<Tutorial> tutorial = tutorialRepository.findById(idTuto);
-        if (tutorial.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+    @GetMapping("/tutorials/{id}")
+    public String displayTutorial(@PathVariable Long id, Model model) {
+        try {
+            Tutorial t = tutorialService.fetchById(id);
+            model.addAttribute("tutorial", t);
+        } catch (Exception e) {
+            e.printStackTrace();
         }
-
-        Tutorial updateTuto = tutorial.get();
-        updateTuto.setTitle(dto.getTitle());
-        updateTuto.setDescription(dto.getDescription());
-        updateTuto.setPublished(dto.isPublished());
-        tutorialRepository.save(updateTuto);
-        return ResponseEntity.status(HttpStatus.OK).body(updateTuto);
+        return "tutorial-details";
     }
 
-    @DeleteMapping("/tutorials/{id}")
-    public ResponseEntity<HttpStatus> deleteTutorialById(@PathVariable("id") Long idTuto) {
-        Optional<Tutorial> tutorial = tutorialRepository.findById(idTuto);
-        if (tutorial.isPresent()) {
-            tutorialRepository.deleteById(idTuto);
-            return ResponseEntity.status(HttpStatus.OK).build();
-        } else {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-        }
+    @GetMapping("/tutorials/add")
+    public String addTutorialForm() {
+        return "add-tutorial";
     }
 
-    @DeleteMapping("/tutorials")
-    public ResponseEntity<HttpStatus> deleteTutorial() {
-        tutorialRepository.deleteAll();
-        return ResponseEntity.status(HttpStatus.OK).build();
+    @PostMapping("/tutorials/add")
+    public String addGameSubmission(TutorialDto tutorialDto) {
+        tutorialService.save(tutorialDto);
+        return "redirect:/tutorials";
     }
+
+    @GetMapping("/tutorials/delete/{id}")
+    public String deleteTutorial(@PathVariable Long id, Model model) {
+        tutorialService.remove(id);
+        return "redirect:/tutorials";
+    }
+
 }

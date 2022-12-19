@@ -1,4 +1,4 @@
-package com.training.tutorials.controller;
+package com.training.tutorials.controller.api;
 
 import com.training.tutorials.repository.entity.Tutorial;
 import com.training.tutorials.repository.TutorialRepository;
