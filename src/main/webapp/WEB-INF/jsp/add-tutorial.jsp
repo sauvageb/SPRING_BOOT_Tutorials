@@ -29,8 +29,8 @@
                         </div>
 
                         <div class="mb-3">
-                            <label>Description</label>
-                            <input type="text" name="description" class="form-control">
+                            <label for="description">Description</label>
+                            <textarea id="description" type="text" name="description" class="form-control"></textarea>
                         </div>
 
                         <div class="mb-3 text-end">
