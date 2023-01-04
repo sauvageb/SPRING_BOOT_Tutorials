@@ -92,17 +92,31 @@ class TutorialRestControllerTest {
     void when_getTutorialById__then__returnSpecificTutorial() throws Exception {
         // given
         Long id = 1L;
+        // when
         Tutorial tutorial = new Tutorial("Tuto #1", "Description #1");
         tutorial.setId(id);
-        // when
         when(tutorialRepository.findById(id)).thenReturn(Optional.of(tutorial));
 
         // then
-        mockMvc.perform(get("/api/tutorials/{id}", id)).andExpect(status().isOk())
+        mockMvc.perform(get("/api/tutorials/{id}", id))
+                .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(id))
                 .andExpect(jsonPath("$.title").value(tutorial.getTitle()))
                 .andExpect(jsonPath("$.description").value(tutorial.getDescription()))
                 .andExpect(jsonPath("$.published").value(tutorial.isPublished()))
+                .andDo(print());
+    }
+
+    @Test
+    void when_getTutorialById__then__returnNotFound() throws Exception {
+        // given
+        Long id = 100L;
+        // when
+        when(tutorialRepository.findById(100L)).thenReturn(Optional.empty());
+
+        // then
+        mockMvc.perform(get("/api/tutorials/{id}", id))
+                .andExpect(status().isNotFound())
                 .andDo(print());
     }
 
