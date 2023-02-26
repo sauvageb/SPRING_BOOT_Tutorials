@@ -1,6 +1,6 @@
 # Projet Tutorials
 
-Simple projet effectuant un CRUD sur une entitée Game
+Simple projet effectuant un CRUD sur une entitée Tutorial
 Deux URLS sont disponibles :
 - http://localhost:9090/tutorials
 - http://localhost:9090/api/tutorials
