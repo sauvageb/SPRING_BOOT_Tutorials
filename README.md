@@ -5,6 +5,8 @@ Deux URLS sont disponibles :
 - http://localhost:9090/tutorials
 - http://localhost:9090/api/tutorials
 
+Peut-etre utilisé par le frontend Angular suivant : https://github.com/sauvageb/Angular_Tutorials
+
 # Technologies
 
 - Spring Boot 3.0.0
